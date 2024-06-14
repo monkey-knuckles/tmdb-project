@@ -26,11 +26,15 @@ function list_folders($directory, $api_key) {
         $folders = scandir($directory);
 
         foreach ($folders as $folder) {
+            // Ignore . and .. directories and only consider actual folders
             if ($folder !== '.' && $folder !== '..' && is_dir($directory . '/' . $folder)) {
+                // Replace underscore with space for TMDB search
+                $series_name = str_replace('_', ' ', $folder);
+
                 $counter++;
 
                 // Fetch series count from TMDB
-                $tmdb_series_count = get_series_count_from_tmdb($folder, $api_key);
+                $tmdb_series_count = get_series_count_from_tmdb($series_name, $api_key);
 
                 $subfolders = scandir($directory . '/' . $folder);
                 $subfolder_count = count(array_filter($subfolders, function ($item) use ($directory, $folder) {
@@ -38,13 +42,13 @@ function list_folders($directory, $api_key) {
                 }));
 
                 $result[] = [
-                    'name' => $folder,
+                    'name' => $folder, // Original folder name with underscores
                     'subfolder_count' => $subfolder_count,
                     'tmdb_series_count' => $tmdb_series_count
                 ];
 
                 // Limit to first 10 folders
-                if ($counter >= 20) {
+                if ($counter >= 10) {
                     break;
                 }
             }
